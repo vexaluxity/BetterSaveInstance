@@ -3803,40 +3803,41 @@ local function synsaveinstance(CustomOptions, CustomOptions2)
 if IsolatePlayers then
     SaveNotCreatable = true
     
-    -- Create individual folders for each player with their PlayerGui
-    local playersData = {}
+    -- Create a main folder for all players
+    local mainPlayersFolder = Instance.new("Folder")
+    mainPlayersFolder.Name = "Players"
     
     for _, player in service.Players:GetPlayers() do
-        local playerFolder = {
-            Name = player.Name,
-            ClassName = "Folder",
-            Children = {}
-        }
+        -- Create a folder for this specific player
+        local playerFolder = Instance.new("Folder")
+        playerFolder.Name = player.Name
         
-        -- Add the player instance
-        table.insert(playerFolder.Children, player)
+        -- Add the player instance to the folder
+        player.Parent = playerFolder
         
         -- Add PlayerGui if it exists
         local playerGui = player:FindFirstChild("PlayerGui")
         if playerGui then
-            table.insert(playerFolder.Children, playerGui)
+            playerGui.Parent = playerFolder
         end
         
         -- Add other player containers if needed
         local playerScripts = player:FindFirstChild("PlayerScripts")
         if playerScripts then
-            table.insert(playerFolder.Children, playerScripts)
+            playerScripts.Parent = playerFolder
         end
         
         local backpack = player:FindFirstChild("Backpack")
         if backpack then
-            table.insert(playerFolder.Children, backpack)
+            backpack.Parent = playerFolder
         end
         
-        table.insert(playersData, playerFolder)
+        -- Add this player folder to the main players folder
+        playerFolder.Parent = mainPlayersFolder
     end
     
-    save_extra("Players", playersData)
+    -- Save the entire structure
+    save_extra("Players", mainPlayersFolder, true)
 end
 
 		if NilInstances and global_container.getnilinstances then
