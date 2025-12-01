@@ -3801,9 +3801,17 @@ local function synsaveinstance(CustomOptions, CustomOptions2)
 		end
 
 		if IsolatePlayers then
-			SaveNotCreatable = true
-			save_extra("Players", service.Players) -- no reason to saveprops as you can see the props on the original instance
-		end
+    SaveNotCreatable = true
+    -- Save Players service and all PlayerGui instances
+    local playersData = {service.Players}
+    for _, player in service.Players:GetPlayers() do
+        local playerGui = player:FindFirstChild("PlayerGui")
+        if playerGui then
+            table.insert(playersData, playerGui)
+        end
+    end
+    save_extra("Players", playersData)
+end
 
 		if NilInstances and global_container.getnilinstances then
 			local nil_instances, nil_instances_size = {}, 1
