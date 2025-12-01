@@ -3802,55 +3802,15 @@ local function synsaveinstance(CustomOptions, CustomOptions2)
 
 if IsolatePlayers then
     SaveNotCreatable = true
-
-    -- Create isolated Players folder
-    local isolatedPlayersFolder = Instance.new("Folder")
-    isolatedPlayersFolder.Name = "Isolated Players"
-
-    local players = service.Players:GetPlayers()
-    local playerOverrides = {}
-
-    for _, player in ipairs(players) do
-        -- Clone the Player instance structure
-        local playerClone = Instance.new("Player")
-        playerClone.Name = player.Name
-        playerClone.UserId = player.UserId
-        playerClone.DisplayName = player.DisplayName
-
-        -- Save PlayerGui properly
+    save_extra("Players", service.Players) -- no reason to saveprops as you can see the props on the original instance
+    
+    -- Add PlayerGui isolation for each player
+    for _, player in service.Players:GetPlayers() do
         local playerGui = player:FindFirstChild("PlayerGui")
         if playerGui then
-            -- Force save PlayerGui even if NotArchivable
-            InstancesOverrides[playerGui] = {
-                __Children = playerGui:GetChildren(),
-                Properties = { Name = "PlayerGui" }
-            }
-            -- Make sure PlayerGui is treated as a normal Container (ScreenGui parented to Player)
-            save_hierarchy({playerGui})
+            save_extra(player.Name, playerGui, true, "Folder")
         end
-
-        -- Also save Backpack if exists
-        local backpack = player:FindFirstChild("Backpack")
-        if backpack then
-            InstancesOverrides[backpack] = {
-                __Children = backpack:GetChildren(),
-                Properties = { Name = "Backpack" }
-            }
-            save_hierarchy({backpack})
-        end
-
-        -- Parent the cloned player to isolated folder
-        playerClone.Parent = isolatedPlayersFolder
-
-        -- Optional: Add a StringValue to identify original player
-        local originalInfo = Instance.new("StringValue")
-        originalInfo.Name = "OriginalPlayerInfo"
-        originalInfo.Value = string.format("UserId: %d | Name: %s", player.UserId, player.Name)
-        originalInfo.Parent = playerClone
     end
-
-    -- Save the entire isolated Players folder
-    save_extra("Isolated Players", isolatedPlayersFolder, true, "Folder")
 end
 
 		if NilInstances and global_container.getnilinstances then
