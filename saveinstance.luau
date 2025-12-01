@@ -3800,16 +3800,42 @@ local function synsaveinstance(CustomOptions, CustomOptions2)
 			save_extra("StarterPlayer", service.StarterPlayer) -- no reason to saveprops as you can see the props on the original instance
 		end
 
-		if IsolatePlayers then
+if IsolatePlayers then
     SaveNotCreatable = true
-    -- Save Players service and all PlayerGui instances
-    local playersData = {service.Players}
+    
+    -- Create individual folders for each player with their PlayerGui
+    local playersData = {}
+    
     for _, player in service.Players:GetPlayers() do
+        local playerFolder = {
+            Name = player.Name,
+            ClassName = "Folder",
+            Children = {}
+        }
+        
+        -- Add the player instance
+        table.insert(playerFolder.Children, player)
+        
+        -- Add PlayerGui if it exists
         local playerGui = player:FindFirstChild("PlayerGui")
         if playerGui then
-            table.insert(playersData, playerGui)
+            table.insert(playerFolder.Children, playerGui)
         end
+        
+        -- Add other player containers if needed
+        local playerScripts = player:FindFirstChild("PlayerScripts")
+        if playerScripts then
+            table.insert(playerFolder.Children, playerScripts)
+        end
+        
+        local backpack = player:FindFirstChild("Backpack")
+        if backpack then
+            table.insert(playerFolder.Children, backpack)
+        end
+        
+        table.insert(playersData, playerFolder)
     end
+    
     save_extra("Players", playersData)
 end
 
